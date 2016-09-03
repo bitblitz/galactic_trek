@@ -1,4 +1,5 @@
 import random
+import math
 
 GALAXY_SIZE=10
 SECTOR_SIZE=10
@@ -37,9 +38,9 @@ class ISectorContent:
         return ''
 
 class Coordinate:
-    def __init__(self, r=-1, c=-1):
+    def __init__(self, r=0, c=0):
         """ stores an integer row and column coordinate for a rectangular coordinate system.
-            -1 means not initialized """
+            """
         self.row = r;
         self.col = c;
 
@@ -55,8 +56,22 @@ class Coordinate:
     def __eq__(self, other):
         return self.row == other.row and self.col == other.col
 
-    def isSet():
-        return self.row >= 0 and self.col >= 0
+    def __mul__(self, other):
+        
+        if isinstance(other, (int, float)):
+            return Coordinate(self.row * other, self.col * other)
+        else:
+            return NotImplemented
+
+    def __add__(self, other):
+        
+        if isinstance(other, Coordinate):
+            return Coordinate(self.row + other.row, self.col + other.col)
+        elif isinstance(other, (int, float)):
+            return Coordinate(self.row + other, self.col + other)
+        else:
+            return NotImplemented
+        
 
 class Star(ISectorContent):
     def __init__(self, coord):
@@ -101,6 +116,11 @@ class Player(ISectorContent):
         sector.map[self.sector_coord]= self
         sector.unhide()
 
+    def display(self):
+        print('Shield:', self.shield)
+        print(' Torps:', self.torps)
+        print('Energy:', self.energy)
+              
     def asChar(self):
         return 'P'
 
@@ -219,11 +239,120 @@ class Galaxy(dict):
             #    s.print_sector()
 
     
+def draw_current_sector():
+    print('Current Sector: ', g_player.galaxy_coord)
+    g_galaxy[g_player.galaxy_coord].print_sector()
+    g_player.display()
 
+def num_input(prompt, low, high):
+    
+    while True:
+        number = input(prompt)
+
+        try:
+            val = int(number)
+            if val < low or val > high:  # if not a positive int print message and ask for input again
+                print("Invalid Value, try again!")
+                continue
+            break
+        except ValueError:
+            print("That's not a number!")
+    return val
+
+def convert_direction(direction):
+    # convert map direction (0 degrees = up) to trigonometric angle (0 = +x direction, 90 = up)
+    # assumes direction is in [0-360]
+    # returns radians
+    assert direction >= 0 and direction <= 360, "invalid direction conversion"
+    
+    theta = 90 - direction    
+    if theta < 0:
+        theta += 360
+
+    return math.radians(theta)
+
+def abs_ceil(x):
+    # truncate value towards 
+    if x < 0:
+        x = math.floor(x)
+    else:
+        x = math.ceil(x)
+    return x
+
+def calc_move_offsets(direction, warp_factor):
+    # while the user perceives the galaxy as GALAXY_SIZE sectors of SECTOR_SIZE, logically the
+    # galaxy is a flat grid of GALAXY_SIZE * SECTOR_SIZE coordinates across, so we calculate moves in global coordinates.
+    # one warp_factor is equivalent to exactly one SECTOR_SIZE of global coordinates.
+    theta = convert_direction(direction)
+    x = math.trunc(warp_factor * SECTOR_SIZE * math.cos(theta))
+    y = math.trunc(warp_factor * SECTOR_SIZE * math.sin(theta))
+    
+    return Coordinate(x, y)
+
+def galsec_to_global(gal, sec):
+    # convert galactic/sector coord pair to global coordinate
+    return (gal * SECTOR_SIZE + sec)
+
+def global_to_galsec(global_coord):
+    # convert galactic/sector coord pair to global coordinate
+    gal = Coordinate( int(global_coord.row / SECTOR_SIZE), int(global_coord.col/SECTOR_SIZE) );
+    sec = global_coord + (gal * -SECTOR_SIZE)
+    return (gal,sec)
+
+def calc_global_move(delta, gal_coord, sector_coord):
+    gl = galsec_to_global(gal_coord, sector_coord)
+    gl += delta
+    return global_to_galsec(gl)
+
+def Warp(player):
+    direction = num_input('Warp Direction (0-359 degrees, 0 = up)?',0,360)
+    factor = num_input('Warp Factor (1-9)?',1,9)
+
+    delta = calc_move_offsets(direction, factor)
+
+    # calculate the new coordinates from the global ones
+    gal_coord, sec_coord = calc_global_move(delta, player.galaxy_coord, player.sector_coord)
+    player.update_coordinates(gal_coord, sec_coord)
+
+
+def process_command(cmd):
+    cmd = cmd.upper()
+    if cmd == 'W':
+        Warp(g_player)
+    elif cmd == 'I':
+        Impulse(g_player)
+    else:
+        print('invalid cmd:', cmd)
+        
+def tests():
+    print('running tests')
+    # check some basic coordinate conversions
+    gal = Coordinate(1,2)
+    sec = Coordinate(3,4)
+    gl = galsec_to_global(gal,sec)
+    assert gl.row == gal.row*SECTOR_SIZE + sec.row
+    assert gl.col == gal.col*SECTOR_SIZE + sec.col
+    g2, s2 = global_to_galsec(gl)
+    assert gal == g2
+    assert sec == s2
+    gal = gal * 3
+    assert gal.row == 3 and gal.col == 6
+    sec += Coordinate(-1,-3)
+    assert sec.row == 2 and sec.col == 1
+    
 # main code
+
+# initialize game
 random.seed(1)
 g_galaxy = Galaxy()
 g_player= Player(g_galaxy)
-g_galaxy.print(False);
-print('Current Sector: ', g_player.galaxy_coord)
-g_galaxy[g_player.galaxy_coord].print_sector()
+#g_galaxy.print(False);
+
+tests()
+
+# main loop
+while True:
+    draw_current_sector()
+    cmd = input('(W)arp, (I)mpulse:')
+    process_command(cmd)
+
