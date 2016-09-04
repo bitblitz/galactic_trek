@@ -44,6 +44,13 @@ class ISectorContent:
         return ''
 
 
+def apply_bound(val, low, high):
+    if val < low:
+        val = low
+    elif val > high:
+        val = high
+    return val
+
 class Coordinate:
     def __init__(self, r=0, c=0):
         """ stores an integer row and column coordinate for a rectangular coordinate system.
@@ -78,6 +85,11 @@ class Coordinate:
             return Coordinate(self.row + other, self.col + other)
         else:
             return NotImplemented
+
+    def restrict_to_bounds(self, low, high):
+        self.row = apply_bound(self.row, low.row, high.row)
+        self.col = apply_bound(self.col, low.col, high.col)
+        return self
 
 
 class Star(ISectorContent):
@@ -114,7 +126,7 @@ class Player(ISectorContent):
         # which_sector is the player in?
         self.galaxy_coord = Coordinate(random.randrange(0, GALAXY_SIZE), random.randrange(0, GALAXY_SIZE))
 
-        # place player in galaxy. 
+        # place player in galaxy.
         sector = galaxy[self.galaxy_coord]
 
         # If easy start is set, clear the enemies from the
@@ -126,6 +138,8 @@ class Player(ISectorContent):
         self.sector_coord = sector.map.pickEmpty()
         sector.map[self.sector_coord] = self
         sector.unHide()
+
+    def move(self, gal:Coordinate, sec:Coordinate):
 
     def display(self):
         print('Shield:', self.shield)
@@ -307,9 +321,9 @@ def calc_move_offsets(direction, warp_factor):
     # one warp_factor is equivalent to exactly one SECTOR_SIZE of global coordinates.
     theta = convert_direction(direction)
     x = math.trunc(warp_factor * SECTOR_SIZE * math.cos(theta))
-    y = math.trunc(warp_factor * SECTOR_SIZE * math.sin(theta))
+    y = -math.trunc(warp_factor * SECTOR_SIZE * math.sin(theta))
 
-    return Coordinate(x, y)
+    return Coordinate(y, x)
 
 
 def galsec_to_global(gal: Coordinate, sec: Coordinate) -> Coordinate:
@@ -326,7 +340,13 @@ def global_to_galsec(global_coord):
 
 def calc_global_move(delta, gal_coord, sector_coord):
     gl = galsec_to_global(gal_coord, sector_coord)
+    print('global1:', gl)
+    print('delta:', delta)
     gl += delta
+    gl.restrict_to_bounds(Coordinate(0,0), Coordinate(GALAXY_SIZE*SECTOR_SIZE, GALAXY_SIZE*SECTOR_SIZE))
+    print('global2:', gl)
+    print('global2gs:',  global_to_galsec(gl))
+
     return global_to_galsec(gl)
 
 
@@ -338,7 +358,13 @@ def Warp(player):
 
     # calculate the new coordinates from the global ones
     gal_coord, sec_coord = calc_global_move(delta, player.galaxy_coord, player.sector_coord)
-    # player.update_coordinates(gal_coord, sec_coord)
+
+    print('moving from :G:', player.galaxy_coord, ':S:', player.sector_coord)
+    print('Delta', delta)
+    print('moving   to :G:', gal_coord, ':S:', sec_coord)
+    # pause
+    input()
+    player.update_coordinates(gal_coord, sec_coord)
 
 
 def process_command(cmd):
