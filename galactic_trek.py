@@ -102,7 +102,7 @@ class Star(ISectorContent):
 
 class Enemy(ISectorContent):
     def __init__(self, coord):
-        self.energy = random.randint(MIN_ENEMY_ENERGY, MAX_ENEMY_ENERGY)
+        self.energy = random.randrange(MIN_ENEMY_ENERGY, MAX_ENEMY_ENERGY)
         self.coordinate = coord  # create a place to store the coordinate for the object, but don't initialize it yet
 
     def asChar(self):
@@ -120,6 +120,7 @@ class Planet(ISectorContent):
 
 class Player(ISectorContent):
     def __init__(self, galaxy):
+        self.galaxy = galaxy
         self.energy = PLAYER_INITIAL_ENERGY
         self.torps = PLAYER_INITIAL_TORPS
         self.shield = PLAYER_INITIAL_SHIELD
@@ -139,7 +140,21 @@ class Player(ISectorContent):
         sector.map[self.sector_coord] = self
         sector.unHide()
 
-    def move(self, gal:Coordinate, sec:Coordinate):
+    def moveTo(self, gal:Coordinate, sec:Coordinate):
+        # leave currect sector
+        del self.galaxy[self.galaxy_coord].map[self.sector_coord]
+        # move to new sector
+        self.galaxy_coord = gal
+        sector = self.galaxy[self.galaxy_coord]
+
+        if sec in sector.map:
+            # hit something
+            print('COLLISSION IMMINENT, EMERGENCY STOP!!')
+            sec = sector.map.pickEmpty()
+
+        self.sector_coord = sec
+        sector.map[self.sector_coord] = self
+        sector.unHide()
 
     def display(self):
         print('Shield:', self.shield)
@@ -195,21 +210,21 @@ class Sector:
 
         # fill the stars list
         self.stars = list()
-        for r in range(0, random.randint(MIN_STARS, MAX_STARS)):
+        for r in range(0, random.randrange(MIN_STARS, MAX_STARS)):
             s = Star(self.map.pickEmpty())
             self.stars.append(s)
             self.map[s.coordinate] = s
 
         # fill the enemy list
         self.enemies = list()
-        for r in range(0, random.randint(MIN_ENEMY, MAX_ENEMY)):
+        for r in range(0, random.randrange(MIN_ENEMY, MAX_ENEMY)):
             e = Enemy(self.map.pickEmpty())
             self.enemies.append(e)
             self.map[e.coordinate] = e
 
         # fill the planets list
         self.planets = list()
-        for r in range(0, random.randint(MIN_PLANETS, MAX_PLANETS)):
+        for r in range(0, random.randrange(MIN_PLANETS, MAX_PLANETS)):
             p = Planet(self.map.pickEmpty())
             self.planets.append(p)
             self.map[p.coordinate] = p
@@ -225,7 +240,7 @@ class Sector:
                     print(self.map[coord].asChar(), end='')
                 else:
                     print('.', end='')
-            print('\n')
+            print('')
 
         print('-' * SECTOR_SIZE)
         # for i in self.map:
@@ -240,34 +255,80 @@ class Galaxy(dict):
             for c in self.size:
                 self[Coordinate(r, c)] = Sector(r, c)
 
+    def printRowSep(self,r):
+        playerIsRightCol = (g_player.galaxy_coord.col == GALAXY_SIZE-1)
+        playerIsThisRow = (r == g_player.galaxy_coord.row)
+        playerIsPrevRow = (r == g_player.galaxy_coord.row + 1)
+        for c in self.size:
+            if c == g_player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
+                print('************', end='')
+            elif c - 1 == g_player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
+                print('*-----------', end='')
+            else:
+                print('------------', end='')
+
+        # fill in the last character of the row divider
+        if (playerIsThisRow or playerIsPrevRow) and playerIsRightCol:
+            print('*')
+        else:
+            print('-')
+
     # noinspection PyPep8,PyPep8
     def print(self, showHidden):
-        print(
-            '-------------------------------------------------------------------------------------------------------------------------\r')
+        global g_player
+        playerIsRightCol = (g_player.galaxy_coord.col == GALAXY_SIZE-1)
+        playerIsPrevRow = (g_player.galaxy_coord.row == GALAXY_SIZE - 1)
+        playerIsThisRow = False
+        playerIsPrevRow = False
         for r in self.size:
-            print('| ', end='')
-            for c in self.size:
-                s = self[Coordinate(r, c)]
-                if showHidden or not s.hidden:
-                    print('s:', len(s.stars), 'e:', len(s.enemies), sep=' ', end=' | ')
-                else:
-                    print('s:', '-', 'e:', '-', sep=' ', end=' | ')
-            print('\r')
-            print('| ', end='')
-            for c in self.size:
-                s = self[Coordinate(r, c)]
-                if showHidden or not s.hidden:
-                    print('b:', len(s.bases), 'p:', len(s.planets), sep=' ', end=' | ')
-                else:
-                    print('s:', '-', 'e:', '-', sep=' ', end=' | ')
-            print('\r')
-            print(
-                '-------------------------------------------------------------------------------------------------------------------------\r')
+            playerIsThisRow = (r == g_player.galaxy_coord.row)
+            playerIsPrevRow = (r == g_player.galaxy_coord.row + 1)
 
-            # for c in self.size:
-            #    s = self[Coordinate(r,c)]
-            #    print('Sector:' + str(s.coordinate));
-            #    s.print_sector()
+            # draw top border
+            self.printRowSep(r)
+
+            # print top data row for sector
+            for c in self.size:
+                if (r == g_player.galaxy_coord.row or (c == g_player.galaxy_coord.col - 1)) and playerIsThisRow:
+                    print('* ', end='')
+                else:
+                    print('| ', end='')
+
+                s = self[Coordinate(r, c)]
+                if showHidden or not s.hidden:
+                    print('s:', len(s.stars), 'e:', len(s.enemies), sep=' ', end=' ')
+                else:
+                    print('s:', '-', 'e:', '-', sep=' ', end=' ')
+
+            # print right hand cell separator
+            if playerIsThisRow and playerIsRightCol:
+                print('*', end='')
+            else:
+                print('|', end='')
+
+            print('')
+            for c in self.size:
+                if (r == g_player.galaxy_coord.row or (c == g_player.galaxy_coord.col - 1)) and playerIsThisRow:
+                    print('* ', end='')
+                else:
+                    print('| ', end='')
+
+                s = self[Coordinate(r, c)]
+                if showHidden or not s.hidden:
+                    print('b:', len(s.bases), 'p:', len(s.planets), sep=' ', end=' ')
+                else:
+                    print('s:', '-', 'e:', '-', sep=' ', end=' ')
+
+            # print right hand cell separator
+            if playerIsThisRow and playerIsRightCol:
+                print('*', end='')
+            else:
+                print('|', end='')
+
+            print('')
+
+        # draw bottom
+        self.printRowSep(GALAXY_SIZE)
 
 
 def draw_current_sector():
@@ -340,12 +401,12 @@ def global_to_galsec(global_coord):
 
 def calc_global_move(delta, gal_coord, sector_coord):
     gl = galsec_to_global(gal_coord, sector_coord)
-    print('global1:', gl)
-    print('delta:', delta)
+    #print('global1:', gl)
+    #print('delta:', delta)
     gl += delta
-    gl.restrict_to_bounds(Coordinate(0,0), Coordinate(GALAXY_SIZE*SECTOR_SIZE, GALAXY_SIZE*SECTOR_SIZE))
-    print('global2:', gl)
-    print('global2gs:',  global_to_galsec(gl))
+    gl.restrict_to_bounds(Coordinate(0,0), Coordinate(GALAXY_SIZE*SECTOR_SIZE-1, GALAXY_SIZE*SECTOR_SIZE-1))
+    #print('global2:', gl)
+    #print('global2gs:',  global_to_galsec(gl))
 
     return global_to_galsec(gl)
 
@@ -359,16 +420,17 @@ def Warp(player):
     # calculate the new coordinates from the global ones
     gal_coord, sec_coord = calc_global_move(delta, player.galaxy_coord, player.sector_coord)
 
-    print('moving from :G:', player.galaxy_coord, ':S:', player.sector_coord)
-    print('Delta', delta)
-    print('moving   to :G:', gal_coord, ':S:', sec_coord)
+    #print('moving from :G:', player.galaxy_coord, ':S:', player.sector_coord)
+    #print('Delta', delta)
+    #print('moving   to :G:', gal_coord, ':S:', sec_coord)
     # pause
-    input()
-    player.update_coordinates(gal_coord, sec_coord)
+    #input()
+    player.moveTo(gal_coord, sec_coord)
 
 
 def process_command(cmd):
     global g_player
+    global g_galaxy
 
     cmd = cmd.upper()
     if cmd == 'W':
@@ -376,13 +438,15 @@ def process_command(cmd):
     elif cmd == 'I':
         # Impulse(g_player)
         pass
+    elif cmd == 'G':
+        g_galaxy.print(False);
     else:
         print('invalid cmd:', cmd)
 
 
 # noinspection PyAugmentAssignment
 def tests():
-    print('running tests')
+    #print('running tests')
     # check some basic coordinate conversions
     gal = Coordinate(1, 2)
     sec = Coordinate(3, 4)
@@ -406,14 +470,13 @@ def main():
     random.seed(1)
     g_galaxy = Galaxy()
     g_player = Player(g_galaxy)
-    # g_galaxy.print(False);
-
+    g_galaxy.print(False)
     tests()
 
     # main loop
     while True:
         draw_current_sector()
-        cmd = input('(W)arp, (I)mpulse:')
+        cmd = input('(W)arp, (I)mpulse, (G)alaxy Map:')
         process_command(cmd)
 
 if __name__ == '__main__':
