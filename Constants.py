@@ -1,8 +1,4 @@
 
-# define global variables
-g_galaxy = None
-g_player = None
-
 GALAXY_SIZE = 10
 SECTOR_SIZE = 10
 WARP_COST = 100  # cost for warp 1.

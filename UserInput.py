@@ -3,7 +3,8 @@ import time
 
 g_input_queue = []
 
-def queue_input(new_input:list):
+
+def queue_input(new_input: list):
     g_input_queue.extend(new_input)
 
 
@@ -17,7 +18,7 @@ def text_input(prompt):
     print(head)
 
     # pause after auto-input
-    time.sleep(500/1000.0)
+    time.sleep(500 / 1000.0)
 
     return head
 
@@ -37,5 +38,7 @@ def num_input(prompt, low, high):
             print("That's not a number!")
     return val
 
+
 def command_input():
+    # return text_input('(W)arp, (I)mpulse, (G)alaxy Map, (L)ong Range Scan:')
     return text_input('(W)arp, (I)mpulse, (G)alaxy Map:')

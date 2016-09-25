@@ -79,6 +79,7 @@ def calc_energy_cost(warp_factor):
         return int(Constants.WARP_COST * warp_factor * warp_factor)  # warp engines
     return int(Constants.WARP_COST * warp_factor)  # impulse engines
 
+
 def calc_move_offsets(direction, warp_factor):
     # while the user perceives the galaxy as Constants.GALAXY_SIZE sectors of Constants.SECTOR_SIZE, logically the
     # galaxy is a flat grid of Constants.GALAXY_SIZE * Constants.SECTOR_SIZE coordinates across, so we calculate moves
