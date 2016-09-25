@@ -53,8 +53,9 @@ def apply_bound(val, low, high):
 
 
 def convert_direction(direction):
-    # convert map direction (0 degrees = up) to trigonometric angle (0 = +x direction, 90 = up)
-    # assumes direction is in [0-360]
+    # convert map direction (0 degrees = up, clockwise) to
+    # trigonometric angle (0 = +x direction, 90 = up, counter-clockwise)
+    # requires input direction is in [0-360]
     # returns radians
     assert 0 <= direction <= 360, "invalid direction conversion"
 
