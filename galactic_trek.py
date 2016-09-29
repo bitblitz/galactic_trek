@@ -57,6 +57,13 @@ def main():
     Globals.g_player = Player(Globals.g_galaxy)
     Globals.g_galaxy.printGalaxy(Globals.g_player, False)
     #queue_input(["w", "270", "2", "g"])
+    queue_input(["w", "90", "1", "L", "g", "w", "180", "3", "g", "l", "g" ])
+    queue_input(["w", "270", "3", "L", "w", "270", "3", "L", "w", "270", "3", "L", "g"])
+    queue_input(["w", "20", "3", "L", "g"])
+    queue_input(["w", "0", "3", "L", "g"])
+    queue_input(["w", "0", "3", "L", "g"])
+    queue_input(["w", "90", "3", "L", "g"])
+    queue_input(["w", "90", "3", "L", "g"])
     queue_input(["w", "90", "1", "L", "g"])
 
     # main loop

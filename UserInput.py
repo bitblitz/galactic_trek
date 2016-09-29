@@ -18,7 +18,7 @@ def text_input(prompt):
     print(head)
 
     # pause after auto-input
-    time.sleep(500 / 1000.0)
+    time.sleep(100 / 1000.0)
 
     return head
 
