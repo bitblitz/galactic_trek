@@ -40,5 +40,5 @@ def num_input(prompt, low, high):
 
 
 def command_input():
-    # return text_input('(W)arp, (I)mpulse, (G)alaxy Map, (L)ong Range Scan:')
-    return text_input('(W)arp, (I)mpulse, (G)alaxy Map:')
+    return text_input('(W)arp, (I)mpulse, (G)alaxy Map, (L)ong Range Scan:')
+    #return text_input('(W)arp, (I)mpulse, (G)alaxy Map:')

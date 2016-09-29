@@ -22,6 +22,7 @@ BASE_INITIAL_TORPS = 100
 BASE_INITIAL_SHIELD = 10000
 # Easy start means the first sector will have no enemies
 EASY_START = True
+YELLOW_ALERT_ENERGY = 2000 # less than this is yellow alert
 # sound Ids
 ERROR_SOUND = 1
 ALERT_SOUND = 2

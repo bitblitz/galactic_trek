@@ -28,7 +28,7 @@ class Player(ISectorContent):
 
     @staticmethod
     def alertUser(message, soundId):
-        print(message, "Sound: " + soundId)
+        print(message, "Sound: ", soundId)
 
     def move(self, delta, energy_cost):
 
@@ -61,9 +61,18 @@ class Player(ISectorContent):
         sector.unHide()
 
     def display(self):
-        print('Shield:', self.shield)
-        print(' Torps:', self.torps)
-        print('Energy:', self.energy)
+        print('   Shield:', self.shield)
+        print('    Torps:', self.torps)
+        print('   Energy:', self.energy)
+        hasEnemies = not not self.galaxy[self.galaxy_coord].enemies
+        if hasEnemies:
+            condition="RED!"
+        elif self.energy < Constants.YELLOW_ALERT_ENERGY:
+            condition="Yellow"
+        else:
+            condition="Green"
+
+        print('Condition:', condition)
 
     def asChar(self):
         return 'P'

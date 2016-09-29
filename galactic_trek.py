@@ -23,6 +23,15 @@ def Impulse(player):
     (delta, energy_cost) = calc_move_offsets(direction, factor / 10)
     player.move(delta, energy_cost)
 
+def LongRangeScan(player):
+    rows = range(player.galaxy_coord.row-1, player.galaxy_coord.row+2)
+    cols = range(player.galaxy_coord.col-1, player.galaxy_coord.col+2)
+    for row in rows:
+        for col in cols:
+            if Coordinate(row,col) in player.galaxy:
+                player.galaxy[Coordinate(row,col)].unHide()
+
+    player.galaxy.print(Globals.g_player, rows, cols, False)
 
 def process_command(cmd):
     cmd = cmd.upper()
@@ -31,7 +40,9 @@ def process_command(cmd):
     elif cmd == 'I':
         Impulse(Globals.g_player)
     elif cmd == 'G':
-        Globals.g_galaxy.print(False)
+        Globals.g_galaxy.printGalaxy(Globals.g_player, False)
+    elif cmd == 'L':
+        LongRangeScan(Globals.g_player)
     else:
         print('invalid cmd:', cmd)
 
@@ -44,8 +55,9 @@ def main():
     random.seed(1)
     Globals.g_galaxy = Galaxy()
     Globals.g_player = Player(Globals.g_galaxy)
-    Globals.g_galaxy.print(False)
-    queue_input(["w", "270", "2", "g"])
+    Globals.g_galaxy.printGalaxy(Globals.g_player, False)
+    #queue_input(["w", "270", "2", "g"])
+    queue_input(["w", "90", "1", "L", "g"])
 
     # main loop
     while True:

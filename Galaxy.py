@@ -12,14 +12,17 @@ class Galaxy(dict):
             for c in self.size:
                 self[Coordinate(r, c)] = Sector(r, c)
 
-    def printRowSep(self, r):
-        playerIsRightCol = (Globals.g_player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
-        playerIsThisRow = (r == Globals.g_player.galaxy_coord.row)
-        playerIsPrevRow = (r == Globals.g_player.galaxy_coord.row + 1)
-        for c in self.size:
-            if c == Globals.g_player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
+    def printRowSep(self, player, row, cols):
+        playerIsRightCol = (player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
+        playerIsThisRow = (row == player.galaxy_coord.row)
+        playerIsPrevRow = (row == player.galaxy_coord.row + 1)
+        for c in cols:
+            if c not in self.size:
+                continue
+
+            if c == player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
                 print('************', end='')
-            elif c - 1 == Globals.g_player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
+            elif c - 1 == player.galaxy_coord.col and (playerIsThisRow or playerIsPrevRow):
                 print('*-----------', end='')
             else:
                 print('------------', end='')
@@ -30,32 +33,37 @@ class Galaxy(dict):
         else:
             print('-')
 
+    def printGalaxy(self, player, showHidden):
+        self.print(player, self.size, self.size, showHidden)
+
     # noinspection PyPep8,PyPep8
-    def print(self, showHidden):
-        playerIsRightCol = (Globals.g_player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
-        # playerIsPrevRow = (Globals.g_player.galaxy_coord.row == Constants.GALAXY_SIZE - 1)
-        # playerIsThisRow = False
-        # playerIsPrevRow = False
-        for r in self.size:
-            playerIsThisRow = (r == Globals.g_player.galaxy_coord.row)
-            # playerIsPrevRow = (r == Globals.g_player.galaxy_coord.row + 1)
+    def print(self, player, rows: range, cols: range, showHidden):
+        playerIsRightCol = (player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
+        for r in rows:
+            if r not in self.size:
+                continue
+
+            playerIsThisRow = (r == player.galaxy_coord.row)
 
             # draw top border
-            self.printRowSep(r)
+            self.printRowSep(player, r, cols)
 
             # print top data row for sector
-            for c in self.size:
+            for c in cols:
+                if Coordinate(r, c) not in self:
+                    continue
+
                 if playerIsThisRow and (
-                        c == Globals.g_player.galaxy_coord.col or c - 1 == Globals.g_player.galaxy_coord.col):
+                        c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
                     print('* ', end='')
                 else:
                     print('| ', end='')
 
-                s = self[Coordinate(r, c)]
+                s = self[Coordinate(r,c)]
                 if showHidden or not s.hidden:
                     print('s:', len(s.stars), 'e:', len(s.enemies), sep=' ', end=' ')
                 else:
-                    print('s:', '-', 'e:', '-', sep=' ', end=' ')
+                    print('  ', ' ', '  ', ' ', sep=' ', end=' ')
 
             # print right hand cell separator
             if playerIsThisRow and playerIsRightCol:
@@ -65,9 +73,12 @@ class Galaxy(dict):
 
             print('')
             # print second row
-            for c in self.size:
+            for c in cols:
+                if Coordinate(r, c) not in self:
+                    continue
+
                 if playerIsThisRow and (
-                        c == Globals.g_player.galaxy_coord.col or c - 1 == Globals.g_player.galaxy_coord.col):
+                        c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
                     print('* ', end='')
                 else:
                     print('| ', end='')
@@ -76,7 +87,7 @@ class Galaxy(dict):
                 if showHidden or not s.hidden:
                     print('b:', len(s.bases), 'p:', len(s.planets), sep=' ', end=' ')
                 else:
-                    print('s:', '-', 'e:', '-', sep=' ', end=' ')
+                    print('  ', ' ', '  ', ' ', sep=' ', end=' ')
 
             # print right hand cell separator
             if playerIsThisRow and playerIsRightCol:
@@ -87,4 +98,4 @@ class Galaxy(dict):
             print('')
 
         # draw bottom
-        self.printRowSep(Constants.GALAXY_SIZE)
+        self.printRowSep(player, Constants.GALAXY_SIZE, cols)
