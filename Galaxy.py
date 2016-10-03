@@ -1,7 +1,6 @@
 import Constants
 from Coordinate import Coordinate
 from Sector import Sector
-import Globals
 
 
 class Galaxy(dict):
@@ -36,6 +35,11 @@ class Galaxy(dict):
     def printGalaxy(self, player, showHidden):
         self.print(player, self.size, self.size, showHidden)
 
+    def unHideAll(self):
+        for r in range(Constants.GALAXY_SIZE):
+            for c in range(Constants.GALAXY_SIZE):
+                self[Coordinate(r, c)].unHide()
+
     # noinspection PyPep8,PyPep8
     def print(self, player, rows: range, cols: range, showHidden):
         playerIsRightCol = (player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
@@ -54,12 +58,12 @@ class Galaxy(dict):
                     continue
 
                 if playerIsThisRow and (
-                        c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
+                                c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
                     print('* ', end='')
                 else:
                     print('| ', end='')
 
-                s = self[Coordinate(r,c)]
+                s = self[Coordinate(r, c)]
                 if showHidden or not s.hidden:
                     print('s:', len(s.stars), 'e:', len(s.enemies), sep=' ', end=' ')
                 else:
@@ -78,7 +82,7 @@ class Galaxy(dict):
                     continue
 
                 if playerIsThisRow and (
-                        c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
+                                c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
                     print('* ', end='')
                 else:
                     print('| ', end='')

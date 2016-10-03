@@ -1,3 +1,4 @@
+from enum import Enum
 
 GALAXY_SIZE = 10
 SECTOR_SIZE = 10
@@ -22,8 +23,33 @@ BASE_INITIAL_TORPS = 100
 BASE_INITIAL_SHIELD = 10000
 # Easy start means the first sector will have no enemies
 EASY_START = True
-YELLOW_ALERT_ENERGY = 2000 # less than this is yellow alert
+YELLOW_ALERT_ENERGY = 2000  # less than this is yellow alert
 # sound Ids
 ERROR_SOUND = 1
 ALERT_SOUND = 2
 
+APPLICATION_TITLE = "Galactic Trek"
+
+# TKinter related constants
+DEFAULT_FONT_FAMILY = ("MS", "Sans", "Serif")
+MONOSPACE_FONT_FAMILY = "Courier"
+DEFAULT_FONT_SIZE = 10
+BIG_FONT_SIZE = 12
+SMALL_FONT_SIZE = 9
+CODEBOX_FONT_SIZE = 9
+TEXTBOX_FONT_SIZE = DEFAULT_FONT_SIZE
+COLOR_BORDER = 'red'
+DEFAULT_TEXT_COLOR = 'green'
+WINDOW_WIDTH = 1024
+WINDOW_HEIGHT = 800
+# need marging because anchor nw + (0,0) actually cuts off the left side of text like 'C'
+DISPLAY_MARGIN_TOP = 5
+DISPLAY_MARGIN_LEFT = 5
+
+
+class GameMode(Enum):
+    WelcomeAnimation = 1
+    MainMenu = 2
+    Playing = 3
+    GameOver = 4
+    Exiting = 5

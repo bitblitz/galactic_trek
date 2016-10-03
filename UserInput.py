@@ -1,5 +1,6 @@
 # user input module.  Can use scripted input for testing.
 import time
+import Drawing
 
 g_input_queue = []
 
@@ -8,10 +9,18 @@ def queue_input(new_input: list):
     g_input_queue.extend(new_input)
 
 
+def console_text_input(prompt):
+    return input(prompt)
+
+
+def gui_text_input(prompt):
+    return input(prompt)
+
+
 def text_input(prompt):
     global g_input_queue
     if len(g_input_queue) == 0:
-        return input(prompt)
+        return console_text_input(prompt)
 
     head, g_input_queue = g_input_queue[0], g_input_queue[1:]
     print(prompt, end='? ')
@@ -40,5 +49,5 @@ def num_input(prompt, low, high):
 
 
 def command_input():
-    return text_input('(W)arp, (I)mpulse, (G)alaxy Map, (L)ong Range Scan:')
-    #return text_input('(W)arp, (I)mpulse, (G)alaxy Map:')
+    return text_input('(W)arp, (I)mpulse, (G)alaxy Map, (L)ong Range Scan, (D)ock:')
+    # return text_input('(W)arp, (I)mpulse, (G)alaxy Map:')

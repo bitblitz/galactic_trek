@@ -3,7 +3,7 @@ from Enemy import Enemy
 from Planet import Planet
 from SectorMap import *
 from Star import Star
-
+import Drawing
 
 class Sector:
     def __init__(self, row, col):
@@ -40,16 +40,16 @@ class Sector:
     def unHide(self):
         self.hidden = False
 
-    def print_sector(self):
+    def print_sector(self, left, top):
+        lineator = Drawing.Lineator(left, top)
         for r in range(Constants.SECTOR_SIZE):
             for c in range(Constants.SECTOR_SIZE):
                 coord = Coordinate(r, c)
                 if coord in self.map:
-                    print(self.map[coord].asChar(), end='')
+                    lineator.print(' ', self.map[coord].asChar(), ' ', sep='', end='')
                 else:
-                    print('.', end='')
-            print('')
+                    lineator.print(' . ', sep='', end='')
+            lineator.print('')
 
-        print('-' * Constants.SECTOR_SIZE)
-        # for i in self.map:
-        #    print(i, self.map[i])
+        lineator.drawBoundingRect(fill='purple', outline='yellow')
+        return lineator.bbox
