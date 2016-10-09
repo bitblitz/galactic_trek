@@ -3,10 +3,13 @@ import Drawing
 from Galaxy import Galaxy
 from Player import Player
 from Coordinate import *
-from UserInput import num_input
+import UserInput
 from Base import Base
 import Globals
 from IGameStage import IGameStage
+import Util
+
+_command_prompt = '(W)arp, (I)mpulse, (L)ong Range Scan'
 
 
 class ActiveGame(IGameStage):
@@ -15,31 +18,46 @@ class ActiveGame(IGameStage):
         self.player = Player(self.galaxy)
         self.game_over = False
 
-    @staticmethod
-    def Warp(player):
-        direction = num_input('Warp Direction (0-359 degrees, 0 = up)', 0, 360)
-        factor = num_input('Warp Factor (1-9)', 1, 9)
+    def Move(self, player, bias):
 
-        (delta, energy_cost) = calc_move_offsets(direction, factor)
-        player.move(delta, energy_cost)
+        direction = None
+        factor = None
+        def processWarp(player, direction, factor):
+            (delta, energy_cost) = calc_move_offsets(direction, factor)
+            player.move(delta, energy_cost)
 
-    @staticmethod
-    def Impulse(player):
-        direction = num_input('Warp Direction (0-359 degrees, 0 = up)', 0, 360)
-        factor = num_input('Impulse Factor (1-9)', 1, 9)
+        def setDir(val):
+            nonlocal direction
+            direction = val
 
-        (delta, energy_cost) = calc_move_offsets(direction, factor / 10)
-        player.move(delta, energy_cost)
+        def setFactor(val):
+            nonlocal factor
+            factor = val
+            processWarp(self.player, direction, factor/bias)
+
+        UserInput.queue_query(
+            [
+                UserInput.NumQuery(minval=0, maxval=359, prompt='Direction (0-359 degrees, 0 = up)',
+                                   onComplete=setDir),
+                UserInput.NumQuery(minval=1, maxval=9, prompt='Warp Factor (1-9)',
+                                   onComplete= setFactor)
+             ])
+
+
+    def Warp(self, player):
+        self.Move(self.player, 1)
+
+    def Impulse(self, player):
+        self.Move(self.player, 10)
 
     def LongRangeScan(self, player):
-        rows = range(player.galaxy_coord.row - 1, player.galaxy_coord.row + 2)
-        cols = range(player.galaxy_coord.col - 1, player.galaxy_coord.col + 2)
+        rows = Util.inclusive_range(player.galaxy_coord.row - 1, player.galaxy_coord.row + 1)
+        cols = Util.inclusive_range(player.galaxy_coord.col - 1, player.galaxy_coord.col + 1)
         for row in rows:
             for col in cols:
                 if Coordinate(row, col) in player.galaxy:
                     player.galaxy[Coordinate(row, col)].unHide()
 
-        player.galaxy.print(self.player, rows, cols, False)
 
     @staticmethod
     def Dock(player):
@@ -64,10 +82,22 @@ class ActiveGame(IGameStage):
         elif cmd == 'D':
             self.Dock(self.player)
         else:
-            print('invalid cmd:', cmd)
+            UserInput.setCurrentError('invalid cmd:', cmd)
 
-    def draw_current_sector(self):
-        Drawing.draw_current_sector(self)
+    def draw_active_game_screen(self):
+        galbbox = self.galaxy.print(self.player, 0,0, range(0,Constants.GALAXY_SIZE), range(0,Constants.GALAXY_SIZE))
+        rect = Drawing.print_at(0, galbbox.bottom + 5, 'Current Sector: {0}', self.player.galaxy_coord)
+        sectorbox = self.galaxy[self.player.galaxy_coord].print_sector(0, rect.bottom + 1)
+        self.player.display_status(sectorbox.right + 5, rect.bottom + 1)
 
-    def animate(self):
-        self.draw_current_sector()
+        # display current input prompt, input text, and error message if any
+        UserInput.drawInput(0, sectorbox.bottom + 5)
+
+    def drawframe(self):
+        self.draw_active_game_screen()
+        # if no queries are pending, then queue the command prompt
+        if not UserInput.has_query():
+            UserInput.queue_query(
+                [UserInput.ChoiceQuery(choices=['W', 'L', 'I'], prompt=_command_prompt, errMsg="Invalid Command!",
+                                       onComplete=self.process_command)
+                 ])

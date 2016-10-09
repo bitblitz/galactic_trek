@@ -20,22 +20,27 @@ if __name__ == "__main__":
     root["padx"] = 40
     root["pady"] = 20
 
-    # Create a text frame to hold the text Label and the Entry widget
-    textFrame = Frame(root)
-
-    # Create a Label in textFrame
-    entryLabel = Label(textFrame)
-    entryLabel["text"] = "Enter the text:"
-    entryLabel.pack(side=LEFT)
-
-    # Create an Entry Widget in textFrame
-    entryWidget = Entry(textFrame)
-    entryWidget["width"] = 50
-    entryWidget.pack(side=LEFT)
-
-    textFrame.pack()
-
     button = Button(root, text="Submit", command=displayText)
     button.pack()
 
+    canvas = Canvas(root, width=300, height=300)
+    canvas.configure(background='#888888')
+    canvas.pack(fill=BOTH, expand=1)
+    canvas.create_rectangle(50, 25, 150, 75, fill="blue")
+    entryWidget = Entry(canvas, width=150)
+    canvas.create_window(10, 40, window=entryWidget, anchor=NW)
+    #    w = Label(root, text="Red", bg="red", fg="white")
+    ##    w.pack(fill=X)
+    #   canvas.create_window(10, 40, window=entryWidget)
+    #   w = Label(root, text="Green", bg="green", fg="black")
+    #   w.pack(fill=X)
+    #   w = Label(root, text="Blue", bg="blue", fg="white")
+    #   w.pack(fill=X)
+
+    # uncomment this line to demonstrate problem
+    # entryWidget.pack(side=BOTTOM)
+    entryWidget.focus_set()
+    canvas.pack(fill=BOTH, expand=1)
+
+    root.update()
     root.mainloop()

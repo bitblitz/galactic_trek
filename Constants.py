@@ -38,13 +38,9 @@ BIG_FONT_SIZE = 12
 SMALL_FONT_SIZE = 9
 CODEBOX_FONT_SIZE = 9
 TEXTBOX_FONT_SIZE = DEFAULT_FONT_SIZE
-COLOR_BORDER = 'red'
-DEFAULT_TEXT_COLOR = 'green'
-WINDOW_WIDTH = 1024
-WINDOW_HEIGHT = 800
-# need marging because anchor nw + (0,0) actually cuts off the left side of text like 'C'
-DISPLAY_MARGIN_TOP = 5
-DISPLAY_MARGIN_LEFT = 5
+
+WINDOW_WIDTH = 1600
+WINDOW_HEIGHT = 1000
 
 
 class GameMode(Enum):

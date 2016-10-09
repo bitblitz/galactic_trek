@@ -5,6 +5,7 @@ from SectorMap import *
 from Star import Star
 import Drawing
 
+
 class Sector:
     def __init__(self, row, col):
         self.coordinate = Coordinate(row, col)
@@ -37,6 +38,7 @@ class Sector:
             self.planets.append(p)
             self.map[p.coordinate] = p
 
+
     def unHide(self):
         self.hidden = False
 
@@ -51,5 +53,5 @@ class Sector:
                     lineator.print(' . ', sep='', end='')
             lineator.print('')
 
-        lineator.drawBoundingRect(fill='purple', outline='yellow')
+        lineator.drawBoundingRect(fill='purple', outline='yellow', background=True)
         return lineator.bbox

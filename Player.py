@@ -66,7 +66,7 @@ class Player(ISectorContent):
         self.sector.map[self.sector_coord] = self
         self.sector.unHide()
 
-    def display(self, left, top):
+    def display_status(self, left, top):
         lineator = Drawing.Lineator(left, top)
         lineator.print('   Shield:', self.shield)
         lineator.print('    Torps:', self.torps)
@@ -82,4 +82,4 @@ class Player(ISectorContent):
         lineator.print('Condition:', condition)
 
     def asChar(self):
-        return 'P'
+        return 'E'
