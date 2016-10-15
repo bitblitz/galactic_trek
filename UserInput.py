@@ -164,7 +164,7 @@ class InputQuery:
             self.onReturn()
 
         # finally return the rectangle we consumed
-        return Util.Rect.union( [ rcPrompt, rcInput, rcError ] )
+        return Util.Rect.union([rcPrompt, rcInput, rcError])
 
     def onReturn(self):
         if self.currentInput is not None:
@@ -223,7 +223,7 @@ class NumQuery(InputQuery):
 
     def validate(self, value):
 
-        #print("validating: ", value, type(value))
+        # print("validating: ", value, type(value))
 
         try:
             val = int(value)

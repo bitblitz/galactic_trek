@@ -4,11 +4,11 @@ from Coordinate import *
 from Galaxy import Galaxy
 import StarChart
 import Drawing
-import IGameStage
 from ActiveGame import ActiveGame
 
+
 class Player(ISectorContent):
-    def __init__(self, game:ActiveGame, galaxy: Galaxy):
+    def __init__(self, game: ActiveGame, galaxy: Galaxy):
         self.parent_galaxy = galaxy
         self.game = game
         self.energy = Constants.PLAYER_INITIAL_ENERGY
@@ -80,7 +80,7 @@ class Player(ISectorContent):
             condition = "Green"
 
         lineator = Drawing.Lineator(left, top)
-        lineator.print('   Star Date:', game.stardate/100)
+        lineator.print('   Star Date:', game.stardate / 100)
         lineator.print('   Condition:', condition)
         lineator.print('    Position:', self.galaxy_coord, '@', self.sector_coord)
         lineator.print('Life Support:', 'ACTIVE')
@@ -88,7 +88,7 @@ class Player(ISectorContent):
         lineator.print('       Torps:', self.torps)
         lineator.print('      Energy:', self.energy)
         lineator.print('      Shield:', self.shield)
-        lineator.print('    Klingons:', game.cur_klingons+game.cur_commanders+game.cur_superCommanders)
+        lineator.print('    Klingons:', game.cur_klingons + game.cur_commanders + game.cur_superCommanders)
         lineator.print('        Time:', game.remaining_time)
         return lineator.bbox
 

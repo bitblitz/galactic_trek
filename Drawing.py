@@ -38,7 +38,7 @@ def InitializeGameWindow(width, height):
     window.title = Constants.APPLICATION_TITLE
     g_main_canvas = tk.Canvas(window, width=width, height=height)
     g_main_rect = Util.Rect.fromCoord(DISPLAY_MARGIN_LEFT, DISPLAY_MARGIN_TOP, width - DISPLAY_MARGIN_LEFT,
-                                   height - DISPLAY_MARGIN_TOP)
+                                      height - DISPLAY_MARGIN_TOP)
     g_main_canvas.configure(background='#888888')
     # if DEBUG_DISPLAY_BOUNDING_BOXES:
     #    g_main_canvas.create_rectangle(0,0,width,height,fill='#dddddd', outline=Colors.Window_Border, width=4)

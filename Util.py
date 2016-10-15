@@ -45,7 +45,7 @@ class Rect:
         return Rect.fromCoord(rc.left, rc.top, rc.right, rc.bottom)
 
     @staticmethod
-    def union(rectList:list):
+    def union(rectList: list):
         r = None
         for rc in rectList:
             if r is None:
@@ -65,4 +65,3 @@ class Rect:
         self.top = min(self.top, rect.top)
         self.right = max(self.right, rect.right)
         self.bottom = max(self.bottom, rect.bottom)
-

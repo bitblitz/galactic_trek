@@ -17,7 +17,7 @@ class Sector:
 
         # every sector has at least one star, initially
         self.stars = list()
-        for i in range(random.randint(1,9)):
+        for i in range(random.randint(1, 9)):
             self.addStar()
 
     def addBase(self):
@@ -40,21 +40,23 @@ class Sector:
         self.stars.append(s)
         self.map[s.coordinate] = s
 
-    # clear enemies from current sector
-    # def clearEnemies(self):
-    #    # clear enemies from map
-    #    for e in self.enemies:
-    #        del self.map[e.coordinate]
+        # clear enemies from current sector
+        # def clearEnemies(self):
+        #    # clear enemies from map
+        #    for e in self.enemies:
+        #        del self.map[e.coordinate]
 
         # and remove them all
+
     #    self.enemies.clear()
 
 
     def print_sector(self, left, top):
         lineator = Drawing.Lineator(left, top)
-        lineator.print("{:>2}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}".format(0,1,2,3,4,5,6,7,8,9,10))
+        lineator.print(
+            "{:>2}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}{:^3}".format(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
         for r in range(Constants.SECTOR_SIZE):
-            lineator.print("{:>2}".format(r+1), end='')
+            lineator.print("{:>2}".format(r + 1), end='')
             for c in range(Constants.SECTOR_SIZE):
                 coord = Coordinate(r, c)
                 if coord in self.map:

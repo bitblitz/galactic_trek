@@ -3,6 +3,7 @@ import Constants
 from Coordinate import Coordinate
 import Drawing
 
+
 class ChartSector:
     def __init__(self, sector: Sector.Sector):
         self.coordinate = sector.coordinate
@@ -47,7 +48,7 @@ class StarChart(dict):
     def print(self, player, left, top, rows: range, cols: range):
         lineator = Drawing.Lineator(left, top)
         playerIsRightCol = (player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
-        isHidden=True
+        isHidden = True
         for r in rows:
             if r not in self.size:
                 continue
@@ -59,7 +60,7 @@ class StarChart(dict):
 
             # print top data row for sector
             for c in cols:
-                isHidden= Coordinate(r, c) not in self
+                isHidden = Coordinate(r, c) not in self
 
                 if playerIsThisRow and (
                                 c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):
@@ -82,7 +83,7 @@ class StarChart(dict):
             lineator.print('')
             # print second row
             for c in cols:
-                isHidden= Coordinate(r, c) not in self
+                isHidden = Coordinate(r, c) not in self
 
                 if playerIsThisRow and (
                                 c == player.galaxy_coord.col or c - 1 == player.galaxy_coord.col):

@@ -13,7 +13,6 @@ from ActiveGame import ActiveGame
 from Coordinate import *
 import UserInput
 import Globals
-import time
 import Drawing
 
 
@@ -45,30 +44,30 @@ def InjectTestInput():
     # Globals.g_galaxy.unHideAll()
     pass
 
-
-def z():
-    DisplayOpeningSequence()
-
-    # main loop
-    Globals.exit_game = False
-
-    while not Globals.g_exit_game:
-        # collect game options, etc.
-        game = RunPreGameMenu()
-
-        # setup any tests
-        InjectTestInput()
-
-        # run one game (until ActiveGame Over)
-        while not game.game_over:
-            game.draw_current_sector()
-            #            cmd = command_input()
-            #            game.process_command(cmd)
-            Globals.g_tk_root_window.update()
-            time.sleep(0.01)
-
-        # query play again
-        Globals.g_exit_game = True
+#
+# def z():
+#     DisplayOpeningSequence()
+#
+#     # main loop
+#     Globals.exit_game = False
+#
+#     while not Globals.g_exit_game:
+#         # collect game options, etc.
+#         game = RunPreGameMenu()
+#
+#         # setup any tests
+#         InjectTestInput()
+#
+#         # run one game (until ActiveGame Over)
+#         while not game.game_over:
+#             game.draw_current_sector()
+#             #            cmd = command_input()
+#             #            game.process_command(cmd)
+#             Globals.g_tk_root_window.update()
+#             time.sleep(0.01)
+#
+#         # query play again
+#         Globals.g_exit_game = True
 
 
 # main code
