@@ -7,7 +7,7 @@ import Drawing
 
 class Player(ISectorContent):
     def __init__(self, galaxy: Galaxy):
-        self.galaxy = galaxy
+        self.starChart = galaxy
         self.energy = Constants.PLAYER_INITIAL_ENERGY
         self.torps = Constants.PLAYER_INITIAL_TORPS
         self.shield = Constants.PLAYER_INITIAL_SHIELD
@@ -17,9 +17,8 @@ class Player(ISectorContent):
 
         # place player in galaxy.
         self.sector = galaxy[self.galaxy_coord]
+        self.handicap = 1
 
-        # If easy start is set, clear the enemies from the
-        # current sector
         if Constants.EASY_START:
             self.sector.enemies.clear()
 
@@ -27,6 +26,12 @@ class Player(ISectorContent):
         self.sector_coord = self.sector.map.pickEmpty()
         self.sector.map[self.sector_coord] = self
         self.sector.unHide()
+
+        self.brigcapacity = 400
+        self.captured_klingons = 0
+        self.cloak_violations = 0
+        self.is_cloaked = False
+        self.is_cloaking = False
 
     @staticmethod
     def alertUser(message, soundId):
@@ -66,8 +71,9 @@ class Player(ISectorContent):
         self.sector.map[self.sector_coord] = self
         self.sector.unHide()
 
-    def display_status(self, left, top):
+    def display_status(self, left, top, game):
         lineator = Drawing.Lineator(left, top)
+        lineator.print('Star Date:', game.stardate)
         lineator.print('   Shield:', self.shield)
         lineator.print('    Torps:', self.torps)
         lineator.print('   Energy:', self.energy)

@@ -38,7 +38,6 @@ class Sector:
             self.planets.append(p)
             self.map[p.coordinate] = p
 
-
     def unHide(self):
         self.hidden = False
 

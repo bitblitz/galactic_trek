@@ -3,13 +3,11 @@ from Coordinate import Coordinate
 from Sector import Sector
 import Drawing
 
+
 class Galaxy(dict):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size = range(Constants.GALAXY_SIZE)
-        for r in self.size:
-            for c in self.size:
-                self[Coordinate(r, c)] = Sector(r, c)
 
     def printRowSep(self, player, lineator, row, cols):
         playerIsRightCol = (player.galaxy_coord.col == Constants.GALAXY_SIZE - 1)
@@ -32,14 +30,13 @@ class Galaxy(dict):
         else:
             lineator.print('-')
 
-    #def printGalaxy(self, player, showHidden):
+    # def printGalaxy(self, player, showHidden):
     #    self.print(player, self.size, self.size, showHidden)
 
     def unHideAll(self):
         for r in range(Constants.GALAXY_SIZE):
             for c in range(Constants.GALAXY_SIZE):
                 self[Coordinate(r, c)].unHide()
-
 
     # noinspection PyPep8,PyPep8
     def print(self, player, left, top, rows: range, cols: range, showHidden=False):

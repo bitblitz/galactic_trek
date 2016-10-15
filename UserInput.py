@@ -31,19 +31,23 @@ def pop_next_input():
         head = None
     return head
 
+
 def waitingInput():
     global _input_queue
     return len(_input_queue)
+
 
 ########################################################################################################################
 # Query Queue - this is queue of questions to be asked of the user
 ########################################################################################################################
 g_activeQuery = None
 
+
 def waitingQuery():
     global _query_queue
     global g_activeQuery
     return len(_query_queue) + int(bool(g_activeQuery is not None))
+
 
 def _clearActiveInput():
     global g_activeQuery
@@ -54,6 +58,7 @@ def queue_query(new_query: list):
     global _query_queue
     # print("queueing query:", new_query)
     _query_queue.extend(new_query)
+
 
 def has_query():
     global _query_queue
@@ -128,7 +133,7 @@ class InputQuery:
         self.errorEndTime = datetime.now()
         self.onComplete = onComplete
         self.onCancel = onCancel
-        self.takenInput = False # has this query consumed any auto-input yet? limit to once
+        self.takenInput = False  # has this query consumed any auto-input yet? limit to once
         self.errorInput = None
 
     def drawInput(self, left, top):
@@ -137,7 +142,7 @@ class InputQuery:
         autoInput = has_input() and not self.takenInput
         if autoInput:
             self.currentInput = pop_next_input()
-            #print("Input Taken:", self.currentInput, datetime.now())
+            # print("Input Taken:", self.currentInput, datetime.now())
             self.takenInput = True
             try:
                 self.preTransformInput()
@@ -170,8 +175,6 @@ class InputQuery:
                 self.errorInput = self.currentInput
                 self.currentInput = None
 
-
-
     def onBack(self):
         if self.currentInput is not None:
             self.currentInput = self.currentInput[:-1]
@@ -183,7 +186,6 @@ class InputQuery:
         _clearActiveInput()
         if self.onCancel is not None:
             self.onCancel()
-
 
     def onText(self, event):
         if self.currentInput is None:
@@ -207,13 +209,13 @@ class ChoiceQuery(InputQuery):
         super().onText(event)
         self.currentInput = self.currentInput.upper()
 
+
 class NumQuery(InputQuery):
     def __init__(self, minval, maxval, inclusive=True, **kwargs):
         super().__init__(validator=self.validate, **kwargs)
         self.minval = minval
         self.maxval = maxval
         self.inclusive = inclusive
-
 
     def validate(self, value):
 
@@ -230,14 +232,13 @@ class NumQuery(InputQuery):
 
         valid = False
         if self.inclusive:
-            valid = self.minval <= val and val <= self.maxval
+            valid = self.minval <= val <= self.maxval
         else:
-            valid = self.minval < val and val < self.maxval
+            valid = self.minval < val < self.maxval
 
         if not valid:
             print("fail")
         return valid
-
 
 
 ########################################################################################################################

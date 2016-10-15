@@ -28,18 +28,18 @@ def RunPreGameMenu():
 
 def InjectTestInput():
     # walk galaxy
-    # UserInput.queue_input(["w", "270", "2", "g"])
-    # UserInput.queue_input(["w", "90", "1", "L", "g", "w", "180", "3", "g", "l", "g" ])
-    # UserInput.queue_input(["w", "270", "3", "L", "w", "270", "3", "L", "w", "270", "3", "L", "g"])
-    # UserInput.queue_input(["w", "20", "3", "L", "g"])
-    # UserInput.queue_input(["w", "0", "3", "L", "g"])
-    # UserInput.queue_input(["w", "0", "3", "L", "g"])
-    # UserInput.queue_input(["w", "90", "3", "L", "g"])
-    # UserInput.queue_input(["w", "90", "3", "L", "g"])
-    # UserInput.queue_input(["w", "90", "1", "L", "g"])
+    UserInput.queue_input(["w", "270", "2", "g"])
+    UserInput.queue_input(["w", "90", "1", "L", "g", "w", "180", "3", "g", "l", "g"])
+    UserInput.queue_input(["w", "270", "3", "L", "w", "270", "3", "L", "w", "270", "3", "L", "g"])
+    UserInput.queue_input(["w", "20", "3", "L", "g"])
+    UserInput.queue_input(["w", "0", "3", "L", "g"])
+    UserInput.queue_input(["w", "0", "3", "L", "g"])
+    UserInput.queue_input(["w", "90", "3", "L", "g"])
+    UserInput.queue_input(["w", "90", "3", "L", "g"])
+    UserInput.queue_input(["w", "90", "1", "L", "g"])
 
     # dock at close base
-    # UserInput.queue_input(["w", "180", "2", "i", "0", "6", "i", "90", "1"])
+    UserInput.queue_input(["w", "180", "2", "i", "0", "6", "i", "90", "1"])
     UserInput.queue_input(["W", "180", "2"])
 
     # Globals.g_galaxy.unHideAll()

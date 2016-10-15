@@ -17,8 +17,10 @@ def character_range(a, b, inclusive=False):
     for c in range(ord(a), ord(b) + int(bool(inclusive))):
         yield back(c)
 
+
 def inclusive_range(a, b):
-    return range(a,b+1)
+    return range(a, b + 1)
+
 
 def ifNone(var, value):
     if var is None:

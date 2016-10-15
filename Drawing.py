@@ -27,6 +27,7 @@ DEBUG_DISPLAY_FRAME_INFO = True
 DEBUG_VISIBLE_SPACES = False
 DEBUG_VISIBLE_CHAR = '$'
 
+
 class TkRect:
     def __init__(self, li):
         self.left = li[0]
@@ -55,6 +56,7 @@ def InitializeGameWindow(width, height):
     global g_tk_root_window
     global g_main_canvas
     global g_main_rect
+    global _frame_inittime
     g_tk_root_window = tk.Tk()
     window = g_tk_root_window
     window.title = Constants.APPLICATION_TITLE
@@ -78,7 +80,7 @@ def mainloop():
 # display a text object on the canvas and return it's bounding rect
 def _canvas_print_at(canvas, left, top, text, *args, **kwargs):
     s = text.format(*args, **kwargs)
-    #TODO: s = Util.print_to_string(text, *args, **kwargs)
+    # TODO: s = Util.print_to_string(text, *args, **kwargs)
     color = Colors.Text_Color
     if 'fill' in kwargs:
         color = kwargs['fill']
@@ -123,8 +125,9 @@ def print_at(left, top, text, *args, **kwargs):
     rect = _canvas_print_at(g_main_canvas,
                             DISPLAY_MARGIN_LEFT + left,
                             DISPLAY_MARGIN_TOP + top, text, *args, **kwargs)
-    #return rect
-    return rect.fromCoord(rect.left+1, rect.top+1, rect.right -1, rect.bottom-1) # rects are inflated 1 too big
+    # return rect
+    return rect.fromCoord(rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1)  # rects are inflated 1 too big
+
 
 # animation timer handling
 def animate(frameFunction):
@@ -136,6 +139,7 @@ def animate(frameFunction):
 def frame_ready():
     global _frame_count
     global _framefunction
+    global _frame_inittime
     _frame_count += 1
 
     # this is a pretty inefficient way to render each frame because tkinter allows the idea of
@@ -148,7 +152,7 @@ def frame_ready():
     if DEBUG_DISPLAY_FRAME_INFO:
         seconds = datetime.now() - _frame_inittime
         lineator = Lineator(g_main_rect.width() / 2, 0)
-        lineator.print('   Frames:', _frame_count, ' FPS:', _frame_count / seconds.total_seconds() )
+        lineator.print('   Frames:', _frame_count, ' FPS:', _frame_count / seconds.total_seconds())
         lineator.print('  Objects:', len(g_main_canvas.find_all()))
         lineator.print('  input Q:', UserInput.waitingInput(), '/', UserInput.waitingQuery())
 
@@ -175,14 +179,14 @@ class Lineator:
             text = text[:-1]
             linecount += 1
 
-        #rect = print_at(self.left, self.top, '{0}', text)
+        # rect = print_at(self.left, self.top, '{0}', text)
         rect = print_at(self.left, self.top, text)
         self.left += rect.width()
         self.bbox.inflate(rect)
 
         if linecount > 0:
-        #if text.endswith('\n'):
-            #self.top = self.bbox.bottom # += rect.height()
+            # if text.endswith('\n'):
+            # self.top = self.bbox.bottom # += rect.height()
             self.top += rect.height() * linecount
             self.left = self.orig_left
 
