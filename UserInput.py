@@ -150,17 +150,21 @@ class InputQuery:
                 pass
 
         rcInput = Drawing.print_at(left, rcPrompt.bottom + 5, '{0}', Util.ifNone(self.currentInput, ''))
+        rcError = None
         if self.showError:
             # reset error if time has elapsed
             if datetime.now() > self.errorEndTime:
                 self.showError = False
             else:
                 text = Util.print_to_string(self.errMsg, '(', Util.ifNone(self.errorInput, 'none'), ')')
-                Drawing.print_at(0, rcInput.bottom + 5, '{0}', text)
+                rcError = Drawing.print_at(0, rcInput.bottom + 5, '{0}', text)
 
         # now that the input has been drawn at least once, check to see if there is input to consume
         if self.takenInput and datetime.now() > self.inputAutoTime:
             self.onReturn()
+
+        # finally return the rectangle we consumed
+        return Util.Rect.union( [ rcPrompt, rcInput, rcError ] )
 
     def onReturn(self):
         if self.currentInput is not None:
@@ -211,15 +215,15 @@ class ChoiceQuery(InputQuery):
 
 
 class NumQuery(InputQuery):
-    def __init__(self, minval, maxval, inclusive=True, **kwargs):
+    def __init__(self, minVal, maxVal, inclusive=True, **kwargs):
         super().__init__(validator=self.validate, **kwargs)
-        self.minval = minval
-        self.maxval = maxval
+        self.minVal = minVal
+        self.maxVal = maxVal
         self.inclusive = inclusive
 
     def validate(self, value):
 
-        print("validating: ", value, type(value))
+        #print("validating: ", value, type(value))
 
         try:
             val = int(value)
@@ -232,9 +236,9 @@ class NumQuery(InputQuery):
 
         valid = False
         if self.inclusive:
-            valid = self.minval <= val <= self.maxval
+            valid = self.minVal <= val <= self.maxVal
         else:
-            valid = self.minval < val < self.maxval
+            valid = self.minVal < val < self.maxVal
 
         if not valid:
             print("fail")

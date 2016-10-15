@@ -2,12 +2,15 @@ import random
 from ISectorContent import ISectorContent
 from Coordinate import *
 from Galaxy import Galaxy
+import StarChart
 import Drawing
-
+import IGameStage
+from ActiveGame import ActiveGame
 
 class Player(ISectorContent):
-    def __init__(self, galaxy: Galaxy):
-        self.starChart = galaxy
+    def __init__(self, game:ActiveGame, galaxy: Galaxy):
+        self.parent_galaxy = galaxy
+        self.game = game
         self.energy = Constants.PLAYER_INITIAL_ENERGY
         self.torps = Constants.PLAYER_INITIAL_TORPS
         self.shield = Constants.PLAYER_INITIAL_SHIELD
@@ -19,23 +22,19 @@ class Player(ISectorContent):
         self.sector = galaxy[self.galaxy_coord]
         self.handicap = 1
 
-        if Constants.EASY_START:
-            self.sector.enemies.clear()
-
         # where is the player at, in their current sector? find an empty spot:
         self.sector_coord = self.sector.map.pickEmpty()
         self.sector.map[self.sector_coord] = self
-        self.sector.unHide()
 
-        self.brigcapacity = 400
+        self.brigCapacity = 400
         self.captured_klingons = 0
         self.cloak_violations = 0
         self.is_cloaked = False
         self.is_cloaking = False
-
-    @staticmethod
-    def alertUser(message, soundId):
-        print(message, "Sound: ", soundId)
+        # star chart is a partial display of galaxy contents, but
+        # uses the same class, so create an empty one
+        self.starChart = StarChart.StarChart()
+        self.starChart.updateFromSector(self.sector)
 
     @staticmethod
     def dock(base):
@@ -44,7 +43,7 @@ class Player(ISectorContent):
     def move(self, delta, energy_cost):
 
         if energy_cost > self.energy:
-            self.alertUser("Not enough energy for that!", Constants.ERROR_SOUND)
+            self.game.alertUser("Not enough energy for that!", Constants.ERROR_SOUND)
         else:
             self.energy -= energy_cost
 
@@ -57,27 +56,22 @@ class Player(ISectorContent):
 
     def moveTo(self, gal: Coordinate, sec: Coordinate):
         # leave current sector
-        del self.galaxy[self.galaxy_coord].map[self.sector_coord]
+        del self.parent_galaxy[self.galaxy_coord].map[self.sector_coord]
         # move to new sector
         self.galaxy_coord = gal
-        self.sector = self.galaxy[self.galaxy_coord]
+        self.sector = self.parent_galaxy[self.galaxy_coord]
 
         if sec in self.sector.map:
             # hit something
-            self.alertUser('COLLISION IMMINENT, EMERGENCY STOP!!', Constants.ALERT_SOUND)
+            self.game.alertUser('COLLISION IMMINENT, EMERGENCY STOP!!', Constants.ALERT_SOUND)
             sec = self.sector.map.pickEmpty()
 
         self.sector_coord = sec
         self.sector.map[self.sector_coord] = self
-        self.sector.unHide()
+        self.starChart.updateFromSector(self.sector)
 
     def display_status(self, left, top, game):
-        lineator = Drawing.Lineator(left, top)
-        lineator.print('Star Date:', game.stardate)
-        lineator.print('   Shield:', self.shield)
-        lineator.print('    Torps:', self.torps)
-        lineator.print('   Energy:', self.energy)
-        hasEnemies = not not self.galaxy[self.galaxy_coord].enemies
+        hasEnemies = not not self.sector.klingons
         if hasEnemies:
             condition = "RED!"
         elif self.energy < Constants.YELLOW_ALERT_ENERGY:
@@ -85,7 +79,18 @@ class Player(ISectorContent):
         else:
             condition = "Green"
 
-        lineator.print('Condition:', condition)
+        lineator = Drawing.Lineator(left, top)
+        lineator.print('   Star Date:', game.stardate/100)
+        lineator.print('   Condition:', condition)
+        lineator.print('    Position:', self.galaxy_coord, '@', self.sector_coord)
+        lineator.print('Life Support:', 'ACTIVE')
+        lineator.print(' Warp Factor:', 'N/A')
+        lineator.print('       Torps:', self.torps)
+        lineator.print('      Energy:', self.energy)
+        lineator.print('      Shield:', self.shield)
+        lineator.print('    Klingons:', game.cur_klingons+game.cur_commanders+game.cur_superCommanders)
+        lineator.print('        Time:', game.remaining_time)
+        return lineator.bbox
 
     def asChar(self):
         return 'E'

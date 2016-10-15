@@ -2,20 +2,20 @@
 import Drawing
 from Galaxy import Galaxy
 from Sector import Sector
-from Player import Player
 from Coordinate import *
 import UserInput
 from Base import Base
 import Globals
 from IGameStage import IGameStage
 import Util
-from enum import Enum
+from enum import IntEnum
 import random
+import datetime
 
 _command_prompt = '(W)arp, (I)mpulse, (L)ong Range Scan'
 
 
-class GameDifficulty(Enum):
+class GameDifficulty(IntEnum):
     Novice = 1
     Fair = 2
     Good = 3
@@ -23,23 +23,27 @@ class GameDifficulty(Enum):
     Impossible = 5
 
 
-class GameLength(Enum):
+class GameLength(IntEnum):
     Short = 1
     Medium = 2
     Long = 4
 
+class TimedMessage:
+    def __init__(self, message, expiration = None):
+        self.message = message
+        self.expiration = None
 
 class ActiveGame(IGameStage):
     def __init__(self):
-        self.player = Player(self.galaxy)
         self.game_over = False
-        # track star dates as intger * 100 (i.e. 3100.01 = 310001
+
+        self.msgList = list()
+        # track star dates as integer * 100 (i.e. 3100.01 = 310001
         self.difficulty = GameDifficulty.Novice
         self.gameLength = GameLength.Medium
         self.initial_stardate = int(100 * (31.0 * random.random() + 20.0)) * 100
 
         self.initial_planets = random.randint(1, 10)
-        self.initial_romulans = random.randint(2 * int(self.difficulty), 3 * int(self.difficulty))
         self.initial_timeAvail = 7 * int(self.gameLength)
 
         # compute number of klingons
@@ -51,10 +55,12 @@ class ActiveGame(IGameStage):
                 0.15 + 0.1 * (int(self.difficulty) + random.randrange(-1, 1)) * int(self.difficulty)))
         assert self.initial_klingons > 0
         # only ever 1 (for now)
-        self.initial_superCommanders = int(self.difficulty > GameDifficulty.Fair)
+        self.initial_superCommanders = 0 # not yet int(self.difficulty > GameDifficulty.Fair)
         # approximately 1 in 16, but at least 1
-        self.initial_commanders = self.difficulty + random.randint(0, self.initial_klingons / 16)
+        self.initial_commanders = 0 # not yet  self.difficulty + random.randint(0, int(self.initial_klingons / 16))
         assert self.initial_commanders + self.initial_superCommanders <= self.initial_klingons
+
+        self.initial_romulans = 0 # not yet random.randint(2 * int(self.difficulty), 3 * int(self.difficulty))
 
         # resources of the federation to withstand the onslaught
         self.initial_bases = random.randint(2, 5)
@@ -62,6 +68,10 @@ class ActiveGame(IGameStage):
 
         if self.initial_klingons > 50:
             self.initial_bases += 1
+
+        self.initial_stars = 0 # computed during build Galaxy
+        self.galaxy = Galaxy()
+        self.BuildGalaxy()
 
         # set current values
         self.stardate = self.initial_stardate
@@ -72,14 +82,32 @@ class ActiveGame(IGameStage):
         self.cur_planets = self.initial_planets
         self.cur_bases = self.initial_bases
         self.cur_resources = self.initial_resources
-        self.galaxy = Galaxy()
+        self.remaining_time = self.initial_timeAvail
+        self.player = Player(self, self.galaxy)
 
-        # build the galaxy with expected contents
+        # BUG BUG: This removes enemies without actually updating the initial counts
+        # they should be relocated
+        #if Constants.EASY_START:
+        #    self.player.sector.clearEnemies()
 
+
+    # build the galaxy with expected contents
     def BuildGalaxy(self):
+        # first create the galaxy
         for r in self.galaxy.size:
             for c in self.galaxy.size:
-                self.galaxy[Coordinate(r, c)] = Sector(r, c)
+                s = Sector(r, c)
+                self.galaxy[Coordinate(r, c)] = s
+                self.initial_stars = len(s.stars)
+
+        # now drop contents around the galaxy
+        for i in range(self.initial_klingons):
+            self.galaxy.randomSector().addKlingon()
+
+        for i in range(self.initial_bases):
+            self.galaxy.randomSector().addBase()
+
+
 
     def damageFactor(self, player):
         return 0.5 * int(self.difficulty) * player.handicap
@@ -104,9 +132,9 @@ class ActiveGame(IGameStage):
 
         UserInput.queue_query(
             [
-                UserInput.NumQuery(minval=0, maxval=359, prompt='Direction (0-359 degrees, 0 = up)',
+                UserInput.NumQuery(minVal=0, maxVal=359, prompt='Direction (0-359 degrees, 0 = up)',
                                    onComplete=setDir),
-                UserInput.NumQuery(minval=1, maxval=9, prompt='Warp Factor (1-9)',
+                UserInput.NumQuery(minVal=1, maxVal=9, prompt='Warp Factor (1-9)',
                                    onComplete=setFactor)
             ])
 
@@ -121,8 +149,8 @@ class ActiveGame(IGameStage):
         cols = Util.inclusive_range(player.galaxy_coord.col - 1, player.galaxy_coord.col + 1)
         for row in rows:
             for col in cols:
-                if Coordinate(row, col) in player.galaxy:
-                    player.updateStarChart(self.galaxy[Coordinate(row, col)])
+                if Coordinate(row, col) in player.parent_galaxy:
+                    player.starChart.updateFromSector(player.parent_galaxy[Coordinate(row, col)])
 
     @staticmethod
     def Dock(player):
@@ -147,19 +175,39 @@ class ActiveGame(IGameStage):
             self.LongRangeScan(self.player)
         elif cmd == 'D':
             self.Dock(self.player)
-        #else:
-        #    UserInput.setCurrentError('invalid cmd:', cmd)
+            # else:
+            #     UserInput.setCurrentError('invalid cmd:', cmd)
 
     def draw_active_game_screen(self):
-        galbbox = self.galaxy.print(self.player, 0, 0, range(0, Constants.GALAXY_SIZE), range(0, Constants.GALAXY_SIZE))
-        rect = Drawing.print_at(0, galbbox.bottom + 5, 'Current Sector: {0}', self.player.galaxy_coord)
-        sectorbox = self.galaxy[self.player.galaxy_coord].print_sector(0, rect.bottom + 1)
-        self.player.display_status(sectorbox.right + 5, rect.bottom + 1, self)
+        galaxyBoundingBox = self.player.starChart.print(self.player, 0, 0, range(0, Constants.GALAXY_SIZE),
+                                              range(0, Constants.GALAXY_SIZE))
+        rect = Drawing.print_at(0, galaxyBoundingBox.bottom + 5, 'Current Sector: {0}', self.player.galaxy_coord)
+        sectorBox = self.galaxy[self.player.galaxy_coord].print_sector(0, rect.bottom + 1)
+        statusBox = self.player.display_status(sectorBox.right + 5, rect.bottom + 1, self)
 
         # display current input prompt, input text, and error message if any
-        UserInput.drawInput(0, sectorbox.bottom + 5)
+        rectInput = UserInput.drawInput(0, sectorBox.bottom + 5)
 
-    def drawframe(self):
+        # Display fading/scrolling messages, if any
+        lineator= Drawing.Lineator(statusBox.right + 15, sectorBox.top)
+        nextList = list()
+        for i, m in enumerate(self.msgList):
+            if m.expiration is None:
+                m.expiration = datetime.datetime.now() + datetime.timedelta(seconds=5)
+            if m.expiration > datetime.datetime.now():
+                nextList.append(m)
+
+            lineator.print(m.message)
+
+        self.msgList = nextList
+
+
+
+
+
+
+
+    def drawFrame(self):
         self.draw_active_game_screen()
         # if no queries are pending, then queue the command prompt
         if not UserInput.has_query():
@@ -167,3 +215,15 @@ class ActiveGame(IGameStage):
                 [UserInput.ChoiceQuery(choices=['W', 'L', 'G', 'I'], prompt=_command_prompt, errMsg="Invalid Command!",
                                        onComplete=self.process_command)
                  ])
+
+
+
+    def alertUser(self, msgs, soundId):
+        print("Sound: ", soundId)
+        if isinstance(msgs, list):
+            for msg in msgs:
+                self.msgList.append( TimedMessage(msg) )
+        else:
+            self.msgList.append( TimedMessage(msgs) )
+
+from Player import Player

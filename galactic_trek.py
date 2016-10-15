@@ -1,11 +1,11 @@
 #
-# note this game uses tkinter, not pygame for output for a couple of simple reason
+# note this game uses tkinter, not PyGame for output for a couple of simple reason
 # First, it is meant to go with the book "Help Your Kids with Computer Coding", which
 # uses tkinter.
 # Second, while the game uses a graphics output mode, it's emulating old text based games, and uses
 # graphics as a replacement for the curses library to be windows and cross-platform and
 # this mode avoids the complexity of surface management.
-# A future evolution of this will probably use pygame
+# A future evolution of this will probably use PyGame
 
 import random
 

@@ -7,8 +7,8 @@ class IGameStage:
 
     def run(self):
         """ Run the stage"""
-        Drawing.animate(self.drawframe)
+        Drawing.animate(self.drawFrame)
 
     @abc.abstractmethod
-    def drawframe(self):
+    def drawFrame(self):
         pass

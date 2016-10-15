@@ -22,14 +22,12 @@ class Coordinate:
         return self.row == other.row and self.col == other.col
 
     def __mul__(self, other):
-
         if isinstance(other, (int, float)):
             return Coordinate(self.row * other, self.col * other)
         else:
             return NotImplemented
 
     def __add__(self, other):
-
         if isinstance(other, Coordinate):
             return Coordinate(self.row + other.row, self.col + other.col)
         elif isinstance(other, (int, float)):

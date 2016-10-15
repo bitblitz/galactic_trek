@@ -5,9 +5,9 @@ import Colors
 import Constants
 import Util
 import UserInput
-from datetime import timedelta, datetime
+import datetime
 
-# need marging because anchor nw + (0,0) actually cuts off the left side of text like 'C'
+# need margin because anchor nw + (0,0) actually cuts off the left side of text like 'C'
 DISPLAY_MARGIN_TOP = 5
 DISPLAY_MARGIN_LEFT = 5
 
@@ -17,10 +17,10 @@ g_main_rect = None
 
 input_bbox = None
 
-_framefunction = None
+_frameFunction = None
 _frame_count = 0
 _frame_rate = 16  # 60 fps
-_frame_inittime = datetime.now()
+_frame_initTime = datetime.datetime.now()
 
 DEBUG_DISPLAY_BOUNDING_BOXES = False
 DEBUG_DISPLAY_FRAME_INFO = True
@@ -28,40 +28,16 @@ DEBUG_VISIBLE_SPACES = False
 DEBUG_VISIBLE_CHAR = '$'
 
 
-class TkRect:
-    def __init__(self, li):
-        self.left = li[0]
-        self.top = li[1]
-        self.right = li[2]
-        self.bottom = li[3]
-
-    @staticmethod
-    def fromCoord(l, t, r, b):
-        return TkRect((l, t, r, b))
-
-    def width(self):
-        return self.right - self.left
-
-    def height(self):
-        return self.bottom - self.top
-
-    def inflate(self, rect):
-        self.left = min(self.left, rect.left)
-        self.top = min(self.top, rect.top)
-        self.right = max(self.right, rect.right)
-        self.bottom = max(self.bottom, rect.bottom)
-
-
 def InitializeGameWindow(width, height):
     global g_tk_root_window
     global g_main_canvas
     global g_main_rect
-    global _frame_inittime
+    global _frame_initTime
     g_tk_root_window = tk.Tk()
     window = g_tk_root_window
     window.title = Constants.APPLICATION_TITLE
     g_main_canvas = tk.Canvas(window, width=width, height=height)
-    g_main_rect = TkRect.fromCoord(DISPLAY_MARGIN_LEFT, DISPLAY_MARGIN_TOP, width - DISPLAY_MARGIN_LEFT,
+    g_main_rect = Util.Rect.fromCoord(DISPLAY_MARGIN_LEFT, DISPLAY_MARGIN_TOP, width - DISPLAY_MARGIN_LEFT,
                                    height - DISPLAY_MARGIN_TOP)
     g_main_canvas.configure(background='#888888')
     # if DEBUG_DISPLAY_BOUNDING_BOXES:
@@ -70,7 +46,7 @@ def InitializeGameWindow(width, height):
     g_main_canvas.pack(fill=tk.BOTH, expand=1)
 
     window.update()
-    _frame_inittime = datetime.now()
+    _frame_initTime = datetime.datetime.now()
 
 
 def mainloop():
@@ -84,15 +60,15 @@ def _canvas_print_at(canvas, left, top, text, *args, **kwargs):
     color = Colors.Text_Color
     if 'fill' in kwargs:
         color = kwargs['fill']
-    canvasid = canvas.create_text(left, top,
+    canvasId = canvas.create_text(left, top,
                                   font=(Constants.MONOSPACE_FONT_FAMILY, Constants.BIG_FONT_SIZE),
                                   text=s, fill=color,
                                   anchor='nw')
 
     if DEBUG_DISPLAY_BOUNDING_BOXES:
-        r = canvas.create_rectangle(canvas.bbox(canvasid), fill="#444444")
-        canvas.tag_lower(r, canvasid)
-    return TkRect(canvas.bbox(canvasid))
+        r = canvas.create_rectangle(canvas.bbox(canvasId), fill="#444444")
+        canvas.tag_lower(r, canvasId)
+    return Util.Rect(canvas.bbox(canvasId))
 
 
 def _clear_canvas(canvas):
@@ -131,15 +107,15 @@ def print_at(left, top, text, *args, **kwargs):
 
 # animation timer handling
 def animate(frameFunction):
-    global _framefunction
-    _framefunction = frameFunction
+    global _frameFunction
+    _frameFunction = frameFunction
     g_tk_root_window.after(_frame_rate, frame_ready)
 
 
 def frame_ready():
     global _frame_count
-    global _framefunction
-    global _frame_inittime
+    global _frameFunction
+    global _frame_initTime
     _frame_count += 1
 
     # this is a pretty inefficient way to render each frame because tkinter allows the idea of
@@ -148,9 +124,9 @@ def frame_ready():
     # later
     clear_display()
 
-    _framefunction()
+    _frameFunction()
     if DEBUG_DISPLAY_FRAME_INFO:
-        seconds = datetime.now() - _frame_inittime
+        seconds = datetime.datetime.now() - _frame_initTime
         lineator = Lineator(g_main_rect.width() / 2, 0)
         lineator.print('   Frames:', _frame_count, ' FPS:', _frame_count / seconds.total_seconds())
         lineator.print('  Objects:', len(g_main_canvas.find_all()))
@@ -167,27 +143,27 @@ class Lineator:
         self.orig_left = left
         self.left = left
         self.top = top
-        self.bbox = TkRect.fromCoord(left, top, left, top)
+        self.bbox = Util.Rect.fromCoord(left, top, left, top)
 
     def print(self, *args, **kwargs):
         text = Util.print_to_string(*args, **kwargs)
         if DEBUG_VISIBLE_SPACES:
             text = text.replace(' ', DEBUG_VISIBLE_CHAR)
 
-        linecount = 0
+        lineCount = 0
         while text.endswith('\n'):
             text = text[:-1]
-            linecount += 1
+            lineCount += 1
 
         # rect = print_at(self.left, self.top, '{0}', text)
         rect = print_at(self.left, self.top, text)
         self.left += rect.width()
         self.bbox.inflate(rect)
 
-        if linecount > 0:
+        if lineCount > 0:
             # if text.endswith('\n'):
             # self.top = self.bbox.bottom # += rect.height()
-            self.top += rect.height() * linecount
+            self.top += rect.height() * lineCount
             self.left = self.orig_left
 
     def drawBoundingRect(self, fill=None, outline='Black', background=True):
